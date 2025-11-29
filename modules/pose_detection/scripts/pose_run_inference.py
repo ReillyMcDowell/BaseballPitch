@@ -1,58 +1,91 @@
 import cv2
 import os
-from ultralytics import YOLO
+from ultralytics.models import YOLO
 
 # --- CONFIG ---
-# Point this to a video you haven't seen yet
-VIDEO_PATH = "pitch_videos/PitchType-CH_Zone-4_PlayID-6ad381e6-48b4-34b7-8531-82318f1992e0_Date-2025-09-26.mp4" 
-# Use your newly trained model
-MODEL_PATH = "runs/detect/yolo11n_baseball/weights/best.pt" 
+VIDEO_PATH = "pitch_videos\PitchType-CH_Zone-7_PlayID-19c90630-0268-3254-9276-25b5739623a2_Date-2025-09-24.mp4" 
+MODEL_PATH = "runs/pose/yolo11n_pitcher_pose4/weights/best.pt"  # Use trained pitcher model
 OUTPUT_DIR = "output_release_frames"
+# Keypoint indices (COCO format)
+RIGHT_SHOULDER = 6
+RIGHT_ELBOW = 8
+RIGHT_WRIST = 10
 # --------------
 
 def run_inference():
-    if not os.path.exists(MODEL_PATH):
-        print(f"Model not found at {MODEL_PATH}. Please run 3_train_student.py first.")
-        # Fallback to generic for testing if custom model missing
-        model = YOLO('yolo11n.pt')
-        target_class = 32
-    else:
-        model = YOLO(MODEL_PATH)
-        target_class = 0 # 'baseball' in our custom model
-
+    model = YOLO(MODEL_PATH)
+    
     cap = cv2.VideoCapture(VIDEO_PATH)
-    if not cap.isOpened(): return # Handle missing video gracefully
+    if not cap.isOpened(): 
+        print(f"Could not open video: {VIDEO_PATH}")
+        return
 
-    consecutive_detections = 0
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
     triggered = False
     frame_count = 0
+    max_arm_extension = 0
+    best_release_frame = None
+    best_frame_num = 0
+
+    print("Analyzing pitcher pose to detect release point...")
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret: break
 
-        # Track
-        results = model.track(frame, persist=True, classes=[target_class], conf=0.3, verbose=False)
+        # Detect pose
+        results = model(frame, conf=0.3, verbose=False)
         
-        annotated = frame.copy()
+        annotated = results[0].plot()
         
-        if results[0].boxes.id is not None:
-            consecutive_detections += 1
-            annotated = results[0].plot()
-        else:
-            consecutive_detections = 0
+        # Check for keypoints and filter to largest person (pitcher)
+        if results[0].keypoints is not None and len(results[0].keypoints.data) > 0:
+            # If multiple people detected, get the largest one (pitcher)
+            if results[0].boxes is not None and len(results[0].boxes.xywh) > 0:
+                boxes = results[0].boxes.xywh.cpu().numpy()
+                # Find largest bounding box (width * height)
+                areas = [box[2] * box[3] for box in boxes]
+                largest_idx = areas.index(max(areas))
+                keypoints = results[0].keypoints.data[largest_idx].cpu().numpy()
+            else:
+                keypoints = results[0].keypoints.data[0].cpu().numpy()  # Fallback to first person
+            
+            # Get arm keypoints
+            if len(keypoints) >= 17:
+                shoulder = keypoints[RIGHT_SHOULDER]
+                elbow = keypoints[RIGHT_ELBOW]
+                wrist = keypoints[RIGHT_WRIST]
+                
+                # Check if keypoints are visible
+                if shoulder[2] > 0.5 and elbow[2] > 0.5 and wrist[2] > 0.5:
+                    # Calculate arm extension (shoulder to wrist distance)
+                    arm_length = ((wrist[0] - shoulder[0])**2 + (wrist[1] - shoulder[1])**2)**0.5
+                    
+                    # Track maximum extension (likely release point)
+                    if arm_length > max_arm_extension:
+                        max_arm_extension = arm_length
+                        best_release_frame = frame.copy()
+                        best_frame_num = frame_count
+                    
+                    # Draw arm extension info
+                    cv2.putText(annotated, f"Arm Extension: {arm_length:.1f}", 
+                    (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
-        # TRIGGER LOGIC: 3 consecutive frames means ball is in flight
-        if not triggered and consecutive_detections >= 3:
-            print(f"🚀 Release Detected at Frame {frame_count}")
-            save_path = os.path.join(OUTPUT_DIR, f"release_frame_{frame_count}.jpg")
-            cv2.imwrite(save_path, frame) # Save clean frame for SAM
-            triggered = True
-
-        cv2.imshow("Baseball Tracker", annotated)
+        cv2.imshow("Pitcher Pose Analysis", annotated)
         if cv2.waitKey(1) & 0xFF == ord('q'): break
         
         frame_count += 1
+
+    # Save the frame with maximum arm extension as release point
+    if best_release_frame is not None:
+        save_path = os.path.join(OUTPUT_DIR, f"release_frame_{best_frame_num}.jpg")
+        cv2.imwrite(save_path, best_release_frame)
+        print(f"🚀 Release Detected at Frame {best_frame_num}")
+        print(f"   Saved to: {save_path}")
+        print(f"   Max arm extension: {max_arm_extension:.1f}")
+    else:
+        print("⚠️  No pitcher pose detected in video")
 
     cap.release()
     cv2.destroyAllWindows()

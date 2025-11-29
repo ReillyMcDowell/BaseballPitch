@@ -1,6 +1,6 @@
 import cv2
 import os
-from ultralytics import YOLO
+from ultralytics.models import YOLO
 
 # --- CONFIGURATION ---
 VIDEO_PATH = "pitch_videos/PitchType-CH_Zone-4_PlayID-6ad381e6-48b4-34b7-8531-82318f1992e0_Date-2025-09-26.mp4"            # Path to your input video

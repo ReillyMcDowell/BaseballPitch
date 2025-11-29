@@ -1,6 +1,8 @@
-path: ./dataset
+path: ./modules/pose_detection/finetuning_dataset
 train: images/train
 val: images/val
 
+# Pose detection - pitcher class with 17 keypoints
 nc: 1
-names: ['baseball']
+names: ['pitcher']
+kpt_shape: [17, 3]  # 17 keypoints, 3 values each (x, y, visibility)
