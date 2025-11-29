@@ -12,11 +12,17 @@ env/
 # Dataset files
 dataset/images/
 dataset/labels/*.cache
+modules/baseball_detection/finetuning_dataset/images/
+modules/baseball_detection/finetuning_dataset/labels/
+modules/pose_detection/finetuning_dataset/images/
+modules/pose_detection/finetuning_dataset/labels/
 pitch_videos/
 output_release_frames/
 
 # Training outputs
 runs/
+modules/baseball_detection/runs/
+modules/pose_detection/runs/
 
 # Model weights (except the ones tracked by LFS)
 *.pt

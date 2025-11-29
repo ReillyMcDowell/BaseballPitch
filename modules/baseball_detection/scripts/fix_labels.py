@@ -5,7 +5,7 @@ def fix_label_files():
     """Fix label files with incorrect class indices and formatting issues"""
     
     for split in ['train', 'val', 'test']:
-        label_dir = f"dataset/labels/{split}"
+        label_dir = f"modules/baseball_detection/finetuning_dataset/labels/{split}"
         if not os.path.exists(label_dir):
             continue
             

@@ -213,13 +213,36 @@ def download_video(video_href: Optional[str]) -> None:
                 break  # Use first valid source
         
         # Using BeautifulSoup to find the stuff for more easily labeling videos later (PITCH TYPE, ZONE, PLAYID, DATE)
-        pitch_type = soup.select_one('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(4)').get_text().replace('\nPitch Type: ', '').replace('\n                ', '')
-        zone = re.search(r'"zone":"(.*?)"', soup.select_one('#homepage-new_sporty-video > div:nth-of-type(2) > script').string).group(1)
-        pitcher = soup.select_one('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(2)').get_text().replace('\nPitcher: ', '').replace('\n                ', '')
-        batter = soup.select_one('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(1)').get_text().replace('Batter: ', '').replace('\n                ', '')
-        date = soup.select_one('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(9)').get_text().replace('Date: ', '').replace('\n                ', '')
-        play_id = re.search(r"var playId = '(.*?)'", soup.select_one('#homepage-new_sporty-video > div:nth-of-type(2) > script').string).group(1)
-        
+
+        # Helper function to safely get text or return "Unknown" if not found to avoid errors
+        def safe_get_text(selector: str, prefix: str) -> str:
+            element = soup.select_one(selector)
+            if element is not None:
+                return element.get_text().replace(prefix, '').replace('\n                ', '')
+            else:
+                return "Unknown"
+
+        pitch_type = safe_get_text('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(4)', 'Pitch Type: ')
+        pitcher = safe_get_text('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(2)', '\nPitcher: ')
+        batter = safe_get_text('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(1)', 'Batter: ')
+        date = safe_get_text('#sporty_video > div:nth-of-type(2) > div:nth-of-type(2) > ul > li:nth-of-type(9)', 'Date: ')
+
+        # Extracting zone and play ID from script tags using regex and returning "Unknown" if not found to avoid errors
+        def safe_search(pattern: str, string: str) -> str:
+            match = re.search(pattern, string)
+            if match:
+                return match.group(1)
+            else:
+                return "Unknown"
+
+        zone_script = soup.select_one('#homepage-new_sporty-video > div:nth-of-type(2) > script')
+        zone = safe_search(r'"zone":"(.*?)"', zone_script.string if zone_script and zone_script.string else "")
+
+        play_id_script = soup.select_one('#homepage-new_sporty-video > div:nth-of-type(2) > script')
+        play_id = safe_search(r"var playId = '(.*?)'", play_id_script.string if play_id_script and play_id_script.string else "")
+
+
+
         filename = f"PitchType-{pitch_type}_Zone-{zone}_PlayID-{play_id}_Date-{date}.mp4"
 
         if mp4_url is None:

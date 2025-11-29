@@ -3,14 +3,14 @@ import os
 from ultralytics import YOLO
 
 # --- CONFIGURATION ---
-VIDEO_PATH = "pitch_videos/pitch_video.mp4"            # Path to your input video
+VIDEO_PATH = "pitch_videos/PitchType-CH_Zone-4_PlayID-6ad381e6-48b4-34b7-8531-82318f1992e0_Date-2025-09-26.mp4"            # Path to your input video
 OUTPUT_DIR = "release_images"       # Where to save the "Triggered" release frame
-CONF_THRESHOLD = 0.1              # Confidence threshold (keeping low cause baseballs are fast and small)
+CONF_THRESHOLD = 0.25            # Confidence threshold (keeping low cause baseballs are fast and small)
 CLASS_ID_BALL = 32                  # COCO Class ID for 'sports ball' is 32
 # ---------------------
 
 # Load model and track video
-model = YOLO('yolo11n.pt')
+model = YOLO('best.pt')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 results = model.track(source=VIDEO_PATH, show=True, save=False, classes=[CLASS_ID_BALL], conf=CONF_THRESHOLD)
 for i, result in enumerate(results):
