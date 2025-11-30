@@ -3,7 +3,7 @@ import os
 from ultralytics.models import YOLO
 
 # --- CONFIG ---
-VIDEO_PATH = "pitch_videos\PitchType-CH_Zone-7_PlayID-19c90630-0268-3254-9276-25b5739623a2_Date-2025-09-24.mp4" 
+VIDEO_PATH = "pitch_videos/PitchType-CH_Zone-7_PlayID-19c90630-0268-3254-9276-25b5739623a2_Date-2025-09-24.mp4" 
 MODEL_PATH = "runs/pose/yolo11n_pitcher_pose4/weights/best.pt"  # Use trained pitcher model
 OUTPUT_DIR = "output_release_frames"
 # Keypoint indices (COCO format)

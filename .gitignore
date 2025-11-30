@@ -16,6 +16,8 @@ modules/baseball_detection/finetuning_dataset/images/
 modules/baseball_detection/finetuning_dataset/labels/
 modules/pose_detection/finetuning_dataset/images/
 modules/pose_detection/finetuning_dataset/labels/
+modules/release_detection/finetuning_dataset/images/
+modules/release_detection/finetuning_dataset/labels/
 pitch_videos/
 output_release_frames/
 
@@ -23,6 +25,7 @@ output_release_frames/
 runs/
 modules/baseball_detection/runs/
 modules/pose_detection/runs/
+modules/release_detection/runs/
 
 # Model weights (except the ones tracked by LFS)
 *.pt
