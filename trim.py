@@ -1,41 +1,41 @@
 import subprocess
 import os
 import glob
+import json
 
-def trim_video(input_path, output_path, start_time, end_before=None):
+def get_video_duration(video_path):
+    """Get video duration using ffprobe."""
+    command = [
+        'ffprobe', '-v', 'quiet', '-print_format', 'json',
+        '-show_format', video_path
+    ]
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        return float(data['format']['duration'])
+    except (subprocess.CalledProcessError, KeyError, json.JSONDecodeError):
+        return None
+
+def trim_video(input_path, output_path, start_time, end_time):
     """
-    Trims a video using FFmpeg.
+    Trims a video using FFmpeg with start and end times.
     
     Args:
         input_path: Input video path
         output_path: Output video path
         start_time (float): Start time in seconds
-        end_before (float): Seconds to trim from end (optional)
+        end_time (float): End time in seconds (absolute, not duration)
     """
     
-    # Build ffmpeg command
-    if end_before and end_before > 0:
-        # Trim both start and end using atrim filter
-        # This approach: skip start, then cut end using trim filter
-        command = [
-            'ffmpeg', '-y', 
-            '-ss', str(start_time),  # Skip first N seconds
-            '-i', input_path,
-            '-vf', f'trim=0:{-end_before},setpts=PTS-STARTPTS',  # Cut from end
-            '-af', f'atrim=0:{-end_before},asetpts=PTS-STARTPTS',  # Audio trim
-            '-c:v', 'libx264', '-crf', '23', 
-            output_path
-        ]
-    else:
-        # Just trim from start
-        command = [
-            'ffmpeg', '-y',
-            '-ss', str(start_time),
-            '-i', input_path,
-            '-c:v', 'libx264', '-crf', '23',
-            '-c:a', 'copy',
-            output_path
-        ]
+    command = [
+        'ffmpeg', '-y',
+        '-ss', str(start_time),
+        '-to', str(end_time),
+        '-i', input_path,
+        '-c:v', 'libx264', '-crf', '23',
+        '-c:a', 'aac', '-b:a', '128k',
+        output_path
+    ]
     
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
@@ -51,15 +51,15 @@ def trim_video(input_path, output_path, start_time, end_before=None):
                 print(f"   {last_error}")
         return False
 
-def batch_trim_videos(input_folder="pitch_videos", output_folder="pitch_videos_trimmed", trim_start=2.0, trim_end=2.0):
+def batch_trim_videos(input_folder="pitch_videos", output_folder="pitch_videos_trimmed", trim_start=2.0, keep_duration=4.0):
     """
-    Trim the first and last N seconds from all videos in a folder.
+    Trim videos to keep a fixed duration after skipping the start.
     
     Args:
         input_folder: Folder containing input videos
         output_folder: Folder to save trimmed videos
         trim_start: Seconds to trim from start
-        trim_end: Seconds to trim from end
+        keep_duration: Seconds of video to keep after trim_start
     """
     # Create output folder if it doesn't exist
     os.makedirs(output_folder, exist_ok=True)
@@ -72,7 +72,7 @@ def batch_trim_videos(input_folder="pitch_videos", output_folder="pitch_videos_t
         return
     
     print(f"Found {len(video_files)} videos to trim")
-    print(f"Trimming {trim_start}s from start and {trim_end}s from end")
+    print(f"Skipping first {trim_start}s, keeping {keep_duration}s of video")
     print("="*50)
     
     successful = 0
@@ -82,8 +82,11 @@ def batch_trim_videos(input_folder="pitch_videos", output_folder="pitch_videos_t
         video_name = os.path.basename(video_path)
         output_path = os.path.join(output_folder, video_name)
         
-        # Trim the video (start and end)
-        if trim_video(video_path, output_path, start_time=trim_start, end_before=trim_end):
+        # Calculate end time
+        end_time = trim_start + keep_duration
+        
+        # Trim the video
+        if trim_video(video_path, output_path, start_time=trim_start, end_time=end_time):
             successful += 1
         else:
             failed += 1
@@ -99,6 +102,6 @@ if __name__ == "__main__":
     batch_trim_videos(
         input_folder="pitch_videos",
         output_folder="pitch_videos_trimmed",
-        trim_start=2.0,  # Remove first 2 seconds
-        trim_end=2.0     # Remove last 2 seconds
+        trim_start=2.0,    # Skip first 2 seconds
+        keep_duration=3.0  # Keep 3 seconds of video
     )
