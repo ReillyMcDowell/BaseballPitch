@@ -11,14 +11,14 @@ def train():
     # Load the object detection model (not pose)
     model = YOLO('yolo11n.pt')
     
-    # Train on custom ball release detection dataset
+    # Train on custom pitcher detection dataset
     results = model.train(
         data='modules/release_detection/scripts/release_data.yaml',
         epochs=50,
         imgsz=640,
         plots=True,
         batch=16,
-        name='yolo11n_ball_release',
+        name='yolo11n_pitcher',
         device=device,  # Use GPU if available
         project='modules/release_detection/runs/detect'
     )

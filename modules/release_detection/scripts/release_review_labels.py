@@ -4,7 +4,7 @@ import glob
 
 # --- CONFIG ---
 DATASET_BASE = "modules/release_detection/finetuning_dataset"
-SPLIT = "train"  # "train" or "val" or "test"
+SPLIT = "val"  # "train" or "val" or "test"
 # --------------
 
 CLASS_NAMES = ['pitcher']

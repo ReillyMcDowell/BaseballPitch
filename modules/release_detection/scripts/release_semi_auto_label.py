@@ -11,8 +11,8 @@ POSE_CONF = 0.25
 IMG_SIZE = 1280
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 # Frame skip: only label every Nth frame to speed up (1 = every frame)
-FRAME_SKIP = 3  # Label every Nth frame
-MAX_VIDEOS = 1  # Set to a number to limit videos, or None for all
+FRAME_SKIP = 1  # Label every Nth frame
+MAX_VIDEOS = None  # Set to a number to limit videos, or None for all
 # --------------
 
 class SemiAutoLabeler:
