@@ -7,8 +7,8 @@ DATASET_BASE = "modules/release_detection/finetuning_dataset"
 SPLIT = "train"  # "train" or "val" or "test"
 # --------------
 
-CLASS_NAMES = ['ball-in-hand', 'ball-released']
-CLASS_COLORS = [(0, 255, 0), (0, 0, 255)]  # Green for in-hand, Red for released
+CLASS_NAMES = ['pitcher']
+CLASS_COLORS = [(0, 255, 0)]  # Green for pitcher
 
 def draw_yolo_box(img, label_line):
     """Draw bounding box from YOLO format label"""

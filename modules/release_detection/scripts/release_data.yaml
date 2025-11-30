@@ -2,6 +2,6 @@ path: ./modules/release_detection/finetuning_dataset
 train: images/train
 val: images/val
 
-# Ball release detection - two classes
-nc: 2
-names: ['ball-in-hand', 'ball-released']
+# Pitcher detection - single class
+nc: 1
+names: ['pitcher']
