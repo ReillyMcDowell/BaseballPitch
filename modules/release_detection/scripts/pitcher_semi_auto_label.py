@@ -25,13 +25,19 @@ class SemiAutoLabeler:
         self.split = "train"
         self.labeled_count = 0
         self.skipped_count = 0
+        self.deleted_count = 0
         self.detected_boxes = []
+        self.mouse_x = 0
+        self.mouse_y = 0
         
     def mouse_callback(self, event, x, y, flags, param):
-        """Handle mouse click to select pitcher"""
+        """Handle mouse events to track position and clicks"""
+        # Always track mouse position
+        self.mouse_x = x
+        self.mouse_y = y
+        
         if event == cv2.EVENT_LBUTTONDOWN:
             # Find which detected person was clicked
-            click_point = (x, y)
             selected_box = None
             
             for box in self.detected_boxes:
@@ -70,17 +76,37 @@ class SemiAutoLabeler:
         self.labeled_count += 1
         print(f"✓ Labeled frame {self.current_frame_num} ({self.labeled_count} total)")
     
+    def save_frame_no_label(self):
+        """Save frame without label (negative example)"""
+        if self.current_frame is None:
+            return
+        
+        # Save image only
+        img_name = f"{self.video_name}_{self.current_frame_num:04d}.jpg"
+        img_path = f"{OUTPUT_BASE}/images/{self.split}/{img_name}"
+        cv2.imwrite(img_path, self.current_frame)
+        
+        # Create empty label file
+        label_path = f"{OUTPUT_BASE}/labels/{self.split}/{self.video_name}_{self.current_frame_num:04d}.txt"
+        with open(label_path, "w") as f:
+            pass  # Empty file = no objects
+        
+        self.skipped_count += 1
+        print(f"⏭️  Saved frame {self.current_frame_num} without label ({self.skipped_count} total)")
+    
     def label_video(self, video_path):
         """Label all frames in a video"""
         self.video_name = os.path.splitext(os.path.basename(video_path))[0]
         self.split = 'val' if (hash(self.video_name) % 10 == 0) else 'train'
         
-        # Check if video already has labels
-        label_dir = f"{OUTPUT_BASE}/labels/{self.split}"
-        existing_labels = [f for f in os.listdir(label_dir) if f.startswith(self.video_name) and f.endswith('.txt')]
-        if existing_labels:
-            print(f"⏭️  Skipping {self.video_name} (already labeled)")
-            return True
+        # Check if video already has labels in either train or val
+        for split in ['train', 'val']:
+            label_dir = f"{OUTPUT_BASE}/labels/{split}"
+            if os.path.exists(label_dir):
+                existing_labels = [f for f in os.listdir(label_dir) if f.startswith(self.video_name) and f.endswith('.txt')]
+                if existing_labels:
+                    print(f"⏭️  Skipping {self.video_name} (already labeled in {split})")
+                    return True
         
         cap = cv2.VideoCapture(video_path)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -92,8 +118,9 @@ class SemiAutoLabeler:
         print(f"Using device: {DEVICE}")
         print(f"{'='*60}")
         print("\nControls:")
-        print("  - Click on pitcher to select their bounding box")
-        print("  - SPACE/RIGHT ARROW - Skip frame (no pitcher)")
+        print("  - Click on pitcher OR press 'A' to select first bounding box")
+        print("  - SPACE/RIGHT ARROW - Save frame without pitcher label")
+        print("  - D - Delete frame (don't save)")
         print("  - Q - Quit labeling session")
         print("  - N - Skip to next video")
         
@@ -134,7 +161,7 @@ class SemiAutoLabeler:
                 for i, (x1, y1, x2, y2) in enumerate(self.detected_boxes):
                     cv2.rectangle(display_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     cv2.putText(display_frame, f"Person {i+1}", (x1, y1-10), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 
                 # Add info overlay
                 progress_idx = frames_to_label.index(frame_idx) + 1
@@ -143,22 +170,46 @@ class SemiAutoLabeler:
                 cv2.putText(display_frame, info_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 1)
                 
                 if self.detected_boxes:
-                    instruction = "Click on the pitcher"
+                    instruction = "Click pitcher or press 'A' | SPACE=no label | D=delete"
                 else:
-                    instruction = "No people detected - press SPACE to skip"
+                    instruction = "No people detected - SPACE=no label | D=delete"
                 cv2.putText(display_frame, instruction, (10, 60), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                 cv2.putText(display_frame, instruction, (10, 60), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1)
                 
                 cv2.imshow("Semi-Auto Labeling", display_frame)
                 
                 key = cv2.waitKeyEx(1)
                 
-                # Skip frame (no pitcher visible)
-                if key in (32, 2555904, ord('s'), ord('S')):  # Space or Right arrow
-                    self.skipped_count += 1
-                    print(f"⏭️  Skipped frame {self.current_frame_num}")
+                # Press 'A' to select bounding box under mouse cursor
+                if key in (ord('a'), ord('A')):
+                    if self.detected_boxes:
+                        # Check if mouse is over any bounding box
+                        selected_box = None
+                        for box in self.detected_boxes:
+                            x1, y1, x2, y2 = box
+                            if x1 <= self.mouse_x <= x2 and y1 <= self.mouse_y <= y2:
+                                selected_box = box
+                                break
+                        
+                        if selected_box:
+                            self.save_label(selected_box)
+                            break
+                        else:
+                            print("⚠️  Move mouse over a bounding box to select with 'A'")
+                    else:
+                        print("⚠️  No bounding boxes detected")
+                
+                # Save frame without label (negative example)
+                elif key in (32, 2555904, ord('s'), ord('S')):  # Space or Right arrow
+                    self.save_frame_no_label()
+                    break
+                
+                # Delete frame (don't save)
+                elif key in (ord('d'), ord('D')):
+                    self.deleted_count += 1
+                    print(f"🗑️  Deleted frame {self.current_frame_num} ({self.deleted_count} total)")
                     break
                 
                 # Quit
@@ -205,12 +256,13 @@ class SemiAutoLabeler:
         cv2.destroyAllWindows()
         print(f"\n{'='*60}")
         print(f"Labeling session complete!")
-        print(f"Labeled: {self.labeled_count} frames")
-        print(f"Skipped: {self.skipped_count} frames")
+        print(f"Labeled (with pitcher): {self.labeled_count} frames")
+        print(f"Saved (without pitcher): {self.skipped_count} frames")
+        print(f"Deleted: {self.deleted_count} frames")
         print(f"{'='*60}")
         print("\nNext steps:")
-        print("1. Review labels: python modules/release_detection/scripts/release_review_labels.py")
-        print("2. Train model: python modules/release_detection/scripts/release_training.py")
+        print("1. Review labels: python modules/release_detection/scripts/pitcher_review_labels.py")
+        print("2. Train model: python modules/release_detection/scripts/pitcher_training.py")
 
 if __name__ == "__main__":
     labeler = SemiAutoLabeler()

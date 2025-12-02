@@ -8,12 +8,12 @@ def train():
     if device == 'cpu':
         print("⚠️  GPU not available. Training will be slow on CPU.")
     
-    # Load the object detection model (not pose)
-    model = YOLO('yolo11n.pt')
+    # Load the existing trained pitcher model for fine-tuning
+    model = YOLO('modules/release_detection/runs/detect/yolo11n_pitcher/weights/best.pt')
     
-    # Train on custom pitcher detection dataset
+    # Fine-tune on updated custom pitcher detection dataset
     results = model.train(
-        data='modules/release_detection/scripts/release_data.yaml',
+        data='modules/release_detection/scripts/pitcher_data.yaml',
         epochs=50,
         imgsz=640,
         plots=True,
