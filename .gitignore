@@ -18,6 +18,7 @@ modules/pose_detection/finetuning_dataset/images/
 modules/pose_detection/finetuning_dataset/labels/
 modules/release_detection/finetuning_dataset/images/
 modules/release_detection/finetuning_dataset/labels/
+modules/release_detection/release_dataset/
 pitch_videos/
 pitch_videos_trimmed/
 output_release_frames/

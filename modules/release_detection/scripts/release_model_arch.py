@@ -1,42 +1,44 @@
 import torch
 import torch.nn as nn
-from pytorchvideo.models.csn import create_csn
 
 class PitchReleaseCSN(nn.Module):
+    """Lightweight 3D CNN for pitch release detection"""
     def __init__(self, handedness_dim=1, num_classes=2, pretrained=False):
         super().__init__()
         
-        # 1. Load CSN backbone (we'll use it for feature extraction)
-        # Note: CSN-50 outputs 2048 features, CSN-152 outputs 2048 features
-        csn_model = create_csn(
-            input_channel=3,
-            model_depth=50,
-            model_num_class=400,
-            norm=nn.BatchNorm3d,
-            activation=nn.ReLU,
+        # Lightweight 3D CNN backbone (much smaller than CSN-50)
+        self.conv_blocks = nn.Sequential(
+            # Block 1: (B, 3, 16, 224, 224) -> (B, 64, 8, 112, 112)
+            nn.Conv3d(3, 64, kernel_size=(3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3)),
+            nn.BatchNorm3d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),
+            
+            # Block 2: (B, 64, 8, 56, 56) -> (B, 128, 4, 28, 28)
+            nn.Conv3d(64, 128, kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
+            nn.BatchNorm3d(128),
+            nn.ReLU(inplace=True),
+            
+            # Block 3: (B, 128, 4, 28, 28) -> (B, 256, 2, 14, 14)
+            nn.Conv3d(128, 256, kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
+            nn.BatchNorm3d(256),
+            nn.ReLU(inplace=True),
+            
+            # Block 4: (B, 256, 2, 14, 14) -> (B, 512, 1, 7, 7)
+            nn.Conv3d(256, 512, kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
+            nn.BatchNorm3d(512),
+            nn.ReLU(inplace=True),
         )
         
-        # Store the backbone without the final projection layer
-        # We'll extract features before the classification head
-        self.backbone = csn_model
-        self.backbone_features = 2048
+        # Global average pooling
+        self.global_pool = nn.AdaptiveAvgPool3d((1, 1, 1))
         
-        # 2. Custom feature extractor wrapper
-        # This will help us get features instead of classifications
-        self.feature_extractor = nn.Sequential()
-        for name, module in csn_model.named_children():
-            # Stop before the final projection/classification layer
-            if 'projection' in name.lower() or 'fc' in name.lower():
-                break
-            self.feature_extractor.add_module(name, module)
-        
-        # 3. Fusion Layer
-        # Input: 2048 (Video Features) + handedness_dim
+        # Fusion head with handedness
         self.fusion_head = nn.Sequential(
-            nn.Linear(self.backbone_features + handedness_dim, 512),
+            nn.Linear(512 + handedness_dim, 256),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
+            nn.Linear(256, num_classes)
         )
     
     def forward(self, video, handedness):
@@ -47,17 +49,17 @@ class PitchReleaseCSN(nn.Module):
         Returns:
             (B, num_classes) - classification logits
         """
-        # Extract video features using the feature extractor
-        video_features = self.feature_extractor(video)  # (B, C', T', H', W')
+        # Extract features
+        x = self.conv_blocks(video)
         
-        # Global average pooling to get (B, 2048)
-        video_features = torch.nn.functional.adaptive_avg_pool3d(video_features, (1, 1, 1))
-        video_features = video_features.view(video_features.size(0), -1)  # (B, 2048)
+        # Global average pooling
+        video_features = self.global_pool(x)
+        video_features = video_features.view(video_features.size(0), -1)  # (B, 512)
         
         # Concatenate with handedness
-        fused = torch.cat([video_features, handedness], dim=1)  # (B, 2048 + handedness_dim)
+        fused = torch.cat([video_features, handedness], dim=1)
         
         # Final classification
-        output = self.fusion_head(fused)  # (B, num_classes)
+        output = self.fusion_head(fused)
         
         return output

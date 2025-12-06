@@ -5,9 +5,9 @@ from pathlib import Path
 
 # --- CONFIG ---
 INPUT_FOLDER = "pitch_videos_trimmed"
-OUTPUT_FOLDER = "release_dataset"
+OUTPUT_FOLDER = "modules/release_detection/release_dataset"
 FRAMES_PER_CLIP = 16
-FPS_TARGET = 30  # Standardize to 30 fps
+FPS_TARGET = 60  # Standardize to 60 fps
 
 class ReleaseDatasetCreator:
     def __init__(self):
@@ -73,15 +73,20 @@ class ReleaseDatasetCreator:
         print("\nNow find the RELEASE POINT:")
         print("  LEFT/RIGHT ARROW - Navigate frames")
         print("  SPACE - Mark current frame as RELEASE POINT")
+        print("  P - Pause/Resume playback")
         print("  Q - Skip this video")
         print("  S - Save and continue")
         
         while True:
+            # Only read new frame if we haven't set position manually
             ret, frame = cap.read()
             if not ret:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                frame_idx = 0
-                continue
+                # End of video - pause at last frame
+                frame_idx = self.total_frames - 1
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                ret, frame = cap.read()
+                if not ret:
+                    break
             
             # Draw frame info
             display = frame.copy()
@@ -93,13 +98,13 @@ class ReleaseDatasetCreator:
                     cv2.rectangle(display, (0, 0), (display.shape[1], display.shape[0]), 
                                 (0, 255, 0), 10)
                     cv2.putText(display, "RELEASE!", (50, 100), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)
+                                cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)
             
             cv2.putText(display, info, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 
-                       0.7, (255, 255, 255), 2)
+                        0.7, (255, 255, 255), 2)
             cv2.imshow("Mark Release Point", display)
             
-            key = cv2.waitKeyEx(1)
+            key = cv2.waitKeyEx(30)  # Wait longer to pause playback
             
             # Space - mark release
             if key == 32:
@@ -116,6 +121,66 @@ class ReleaseDatasetCreator:
                 frame_idx = max(frame_idx - 1, 0)
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             
+            # P - Pause/Resume playback
+            elif key in (ord('p'), ord('P')):
+                print("⏸️  Paused. Use arrow keys to navigate, SPACE to mark, P to resume")
+                # Wait for key without timeout
+                while True:
+                    pause_key = cv2.waitKeyEx(0)
+                    if pause_key in (ord('p'), ord('P')):
+                        print("▶️  Resumed")
+                        break
+                    elif pause_key == 32:  # Space during pause
+                        release_frame = frame_idx
+                        print(f"✓ Marked release at frame {release_frame}")
+                    elif pause_key in (2555904, 83, ord('d'), ord('D')):
+                        frame_idx = min(frame_idx + 1, self.total_frames - 1)
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                        ret, frame = cap.read()
+                        if ret:
+                            display = frame.copy()
+                            info = f"Frame {frame_idx}/{self.total_frames}"
+                            if release_frame is not None:
+                                info += f" | RELEASE: Frame {release_frame}"
+                                if frame_idx == release_frame:
+                                    cv2.rectangle(display, (0, 0), (display.shape[1], display.shape[0]), 
+                                                (0, 255, 0), 10)
+                                    cv2.putText(display, "RELEASE!", (50, 100), 
+                                              cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)
+                            cv2.putText(display, info, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 
+                                       0.7, (255, 255, 255), 2)
+                            cv2.imshow("Mark Release Point", display)
+                    elif pause_key in (2424832, 81, ord('a'), ord('A')):
+                        frame_idx = max(frame_idx - 1, 0)
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                        ret, frame = cap.read()
+                        if ret:
+                            display = frame.copy()
+                            info = f"Frame {frame_idx}/{self.total_frames}"
+                            if release_frame is not None:
+                                info += f" | RELEASE: Frame {release_frame}"
+                                if frame_idx == release_frame:
+                                    cv2.rectangle(display, (0, 0), (display.shape[1], display.shape[0]), 
+                                                (0, 255, 0), 10)
+                                    cv2.putText(display, "RELEASE!", (50, 100), 
+                                              cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)
+                            cv2.putText(display, info, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 
+                                       0.7, (255, 255, 255), 2)
+                            cv2.imshow("Mark Release Point", display)
+                    elif pause_key in (ord('s'), ord('S')):
+                        if release_frame is not None:
+                            self.save_clips(video_path, release_frame, handedness, 
+                                          handedness_str, video_name)
+                            cap.release()
+                            cv2.destroyAllWindows()
+                            return
+                        else:
+                            print("⚠️  No release frame marked!")
+                    elif pause_key in (ord('q'), ord('Q')):
+                        cap.release()
+                        cv2.destroyAllWindows()
+                        return
+            
             # S - Save
             elif key in (ord('s'), ord('S')):
                 if release_frame is not None:
@@ -128,6 +193,10 @@ class ReleaseDatasetCreator:
             # Q - Skip
             elif key in (ord('q'), ord('Q')):
                 break
+            
+            # If no key pressed, advance to next frame
+            else:
+                frame_idx += 1
         
         cap.release()
         cv2.destroyAllWindows()

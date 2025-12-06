@@ -7,7 +7,7 @@ import numpy as np
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
-from release_frame import PitchReleaseCSN
+from release_model_arch import PitchReleaseCSN
 
 # Setup device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

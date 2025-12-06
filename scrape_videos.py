@@ -18,6 +18,8 @@ from selenium.webdriver.chrome.service import Service
 
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urlparse, parse_qs
+import time
+import random
 
 OUTPUT_FOLDER = "pitch_videos"
 
