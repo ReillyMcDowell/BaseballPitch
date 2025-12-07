@@ -34,12 +34,18 @@ class PitchReleaseCSN(nn.Module):
         self.global_pool = nn.AdaptiveAvgPool3d((1, 1, 1))
         
         # Fusion head with handedness
+        # Predict both: (1) which frame has release (16 outputs) and (2) confidence that release exists
         self.fusion_head = nn.Sequential(
             nn.Linear(512 + handedness_dim, 256),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(256, num_classes)
         )
+        
+        # Frame prediction: which of 16 frames contains release point
+        self.frame_head = nn.Linear(256, 16)
+        
+        # Binary classification: does this clip contain a release?
+        self.has_release_head = nn.Linear(256, num_classes)
     
     def forward(self, video, handedness):
         """
@@ -47,7 +53,8 @@ class PitchReleaseCSN(nn.Module):
             video: (B, C, T, H, W) - batch of video clips
             handedness: (B, handedness_dim) - handedness features
         Returns:
-            (B, num_classes) - classification logits
+            frame_logits: (B, 16) - logits for which frame contains release
+            has_release_logits: (B, 2) - logits for whether release exists
         """
         # Extract features
         x = self.conv_blocks(video)
@@ -59,7 +66,13 @@ class PitchReleaseCSN(nn.Module):
         # Concatenate with handedness
         fused = torch.cat([video_features, handedness], dim=1)
         
-        # Final classification
-        output = self.fusion_head(fused)
+        # Shared fusion features
+        fusion_features = self.fusion_head(fused)
         
-        return output
+        # Predict which frame (0-15) has release
+        frame_logits = self.frame_head(fusion_features)
+        
+        # Predict if release exists
+        has_release_logits = self.has_release_head(fusion_features)
+        
+        return frame_logits, has_release_logits
