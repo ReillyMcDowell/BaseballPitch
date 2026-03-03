@@ -15,10 +15,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Device: {device}")
 
 # Load model
-model = PitchReleaseCSN().to(device)
+model = PitchReleaseCSN(pretrained=True).to(device)  # Must match training architecture
 
-# Try to load trained weights
-weight_path = Path(__file__).parent.parent / "runs" / "release_model_weights.pt"
+# Try to load trained weights if they exist
+weight_path = Path(__file__).parent.parent / "runs" / "release_model_epoch_10.pt"
 if weight_path.exists():
     model.load_state_dict(torch.load(weight_path, map_location=device))
     print(f"✓ Loaded trained model from {weight_path}")

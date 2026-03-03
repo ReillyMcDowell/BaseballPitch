@@ -1,40 +1,34 @@
 import torch
 import torch.nn as nn
+import torchvision
 
 class PitchReleaseCSN(nn.Module):
-    """Lightweight 3D CNN for pitch release detection"""
-    def __init__(self, handedness_dim=1, num_classes=2, pretrained=False):
+    """Transfer learning from pretrained R3D (ResNet 3D) for pitch release detection"""
+    def __init__(self, handedness_dim=1, num_classes=2, pretrained=True):
         super().__init__()
         
-        # Lightweight 3D CNN backbone (much smaller than CSN-50)
-        self.conv_blocks = nn.Sequential(
-            # Block 1: (B, 3, 16, 224, 224) -> (B, 64, 8, 112, 112)
-            nn.Conv3d(3, 64, kernel_size=(3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3)),
-            nn.BatchNorm3d(64),
-            nn.ReLU(inplace=True),
-            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),
-            
-            # Block 2: (B, 64, 8, 56, 56) -> (B, 128, 4, 28, 28)
-            nn.Conv3d(64, 128, kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
-            nn.BatchNorm3d(128),
-            nn.ReLU(inplace=True),
-            
-            # Block 3: (B, 128, 4, 28, 28) -> (B, 256, 2, 14, 14)
-            nn.Conv3d(128, 256, kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
-            nn.BatchNorm3d(256),
-            nn.ReLU(inplace=True),
-            
-            # Block 4: (B, 256, 2, 14, 14) -> (B, 512, 1, 7, 7)
-            nn.Conv3d(256, 512, kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
-            nn.BatchNorm3d(512),
-            nn.ReLU(inplace=True),
-        )
+        # Load pretrained R3D_18 model (trained on Kinetics-400 action recognition)
+        # This gives us strong temporal feature extraction out of the box
+        base_model = torchvision.models.video.r3d_18(weights='DEFAULT' if pretrained else None)
         
-        # Global average pooling
-        self.global_pool = nn.AdaptiveAvgPool3d((1, 1, 1))
+        # Remove the final classification layer
+        # R3D architecture: stem -> layer1 -> layer2 -> layer3 -> layer4 -> avgpool -> fc
+        self.backbone = nn.Sequential(*list(base_model.children())[:-1])  # Remove fc layer
+        
+        # The backbone outputs (B, 512, 1, 1, 1) after avgpool
+        # We'll flatten to (B, 512)
+        
+        # Freeze early layers (only fine-tune later layers)
+        # This prevents overfitting on small dataset
+        for name, param in self.backbone.named_parameters():
+            # Freeze stem, layer1, layer2 (early feature extractors)
+            if any(layer in name for layer in ['stem', 'layer1', 'layer2']):
+                param.requires_grad = False
+            # Fine-tune layer3 and layer4 (high-level features)
+            else:
+                param.requires_grad = True
         
         # Fusion head with handedness
-        # Predict both: (1) which frame has release (16 outputs) and (2) confidence that release exists
         self.fusion_head = nn.Sequential(
             nn.Linear(512 + handedness_dim, 256),
             nn.ReLU(),
@@ -56,12 +50,11 @@ class PitchReleaseCSN(nn.Module):
             frame_logits: (B, 16) - logits for which frame contains release
             has_release_logits: (B, 2) - logits for whether release exists
         """
-        # Extract features
-        x = self.conv_blocks(video)
+        # Extract features with pretrained backbone
+        x = self.backbone(video)
         
-        # Global average pooling
-        video_features = self.global_pool(x)
-        video_features = video_features.view(video_features.size(0), -1)  # (B, 512)
+        # Flatten: (B, 512, 1, 1, 1) -> (B, 512)
+        video_features = x.view(x.size(0), -1)
         
         # Concatenate with handedness
         fused = torch.cat([video_features, handedness], dim=1)

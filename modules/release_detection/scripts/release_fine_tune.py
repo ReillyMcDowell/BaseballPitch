@@ -7,6 +7,7 @@ from tqdm import tqdm
 import time
 import json
 import os
+from sklearn.model_selection import train_test_split
 
 # Import the model from the same directory
 import sys
@@ -68,12 +69,20 @@ if device.type == 'cpu':
     exit(1)
 
 print(f"✓ PyTorch version: {torch.__version__}")
-if hasattr(torch.version, 'cuda') and torch.version.cuda:
-    print(f"✓ CUDA version: {torch.version.cuda}")  # type: ignore
+try:
+    import torch.version
+    if hasattr(torch.version, 'cuda'):
+        print(f"✓ CUDA version: {torch.version.cuda}")
+except:
+    pass
 print(f"✓ GPU: {torch.cuda.get_device_name(0)}")
 
-model = PitchReleaseCSN().to(device)
-optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+model = PitchReleaseCSN(pretrained=True).to(device)  # Enable transfer learning
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)  # Lower LR for fine-tuning
+
+print("\n🚀 Using transfer learning with pretrained R3D-18 model")
+print("   Backbone: Pretrained on Kinetics-400 action recognition")
+print("   Strategy: Freeze early layers, fine-tune layer3 & layer4")
 
 # Class weights to handle imbalance (82 negative, 41 positive)
 class_counts = torch.tensor([82.0, 41.0])
@@ -140,8 +149,6 @@ if __name__ == '__main__':
                 all_release_frames.append(-1)  # No release for negative clips
         
         # Stratified train/val split (80/20)
-        from sklearn.model_selection import train_test_split
-        
         indices = list(range(len(all_labels)))
         train_idx, val_idx = train_test_split(
             indices,
@@ -187,22 +194,22 @@ if __name__ == '__main__':
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=2,
+        batch_size=1,  # Reduced for R3D-18 model size
         shuffle=True,
-        num_workers=4,
-        pin_memory=True
+        num_workers=2,
+        pin_memory=False  # Disable to save memory
     )
     
     val_loader = DataLoader(
         val_dataset,
-        batch_size=2,
+        batch_size=1,  # Reduced for R3D-18 model size
         shuffle=False,
-        num_workers=4,
-        pin_memory=True
+        num_workers=2,
+        pin_memory=False  # Disable to save memory
     )
 
     num_epochs = 30
-    accumulation_steps = 4
+    accumulation_steps = 8  # Increased to compensate for batch_size=1 (effective batch=8)
     best_val_acc = 0.0
     
     for epoch in range(num_epochs):
@@ -330,6 +337,16 @@ if __name__ == '__main__':
             best_model_path = output_dir / "release_model_best.pt"
             torch.save(model.state_dict(), best_model_path)
             print(f"  ✓ New best model saved (val_acc={val_acc:.1f}%)")
+        
+        # Save checkpoint every 5 epochs
+        if (epoch + 1) % 5 == 0:
+            output_dir = Path(__file__).parent.parent / "runs"
+            checkpoint_path = output_dir / f"release_model_epoch_{epoch+1}.pt"
+            torch.save(model.state_dict(), checkpoint_path)
+            print(f"  💾 Checkpoint saved: epoch_{epoch+1}.pt")
+        
+        # Clear GPU cache between epochs
+        torch.cuda.empty_cache()
     
     # Save final model
     output_dir = Path(__file__).parent.parent / "runs"
