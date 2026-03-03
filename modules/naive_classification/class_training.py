@@ -2,7 +2,6 @@ import os
 import cv2
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision import transforms
 from torchvision.models.video import r2plus1d_18, R2Plus1D_18_Weights
 from torch.utils.data import Dataset, DataLoader

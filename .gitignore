@@ -12,8 +12,8 @@ env/
 # Dataset files
 dataset/images/
 dataset/labels/*.cache
-modules/baseball_detection/finetuning_dataset/images/
-modules/baseball_detection/finetuning_dataset/labels/
+modules/naive_classification/val
+modules/naive_classification/train
 modules/pose_detection/finetuning_dataset/images/
 modules/pose_detection/finetuning_dataset/labels/
 modules/release_detection/finetuning_dataset/images/
@@ -25,7 +25,7 @@ output_release_frames/
 
 # Training outputs
 runs/
-modules/baseball_detection/runs/
+modules/naive_classification/runs/
 modules/pose_detection/runs/
 modules/release_detection/runs/
 
