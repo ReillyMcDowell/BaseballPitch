@@ -96,8 +96,8 @@ def batch_trim_videos(input_folder="pitch_videos",
 if __name__ == "__main__":
     # Batch trim all videos in pitch_videos folder
     batch_trim_videos(
-        input_folder="pitch_videos",
-        output_folder="pitch_videos_trimmed",
+        input_folder="woo_pitch_videos",
+        output_folder="trimmed_woo_pitch_videos",
         trim_start=2.0,    # Skip first 2 seconds
         keep_duration=3.0  # Keep 3 seconds of video
     )

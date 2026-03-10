@@ -14,6 +14,7 @@ dataset/images/
 dataset/labels/*.cache
 modules/naive_classification/val
 modules/naive_classification/train
+modules/naive_classification/test
 modules/pose_detection/finetuning_dataset/images/
 modules/pose_detection/finetuning_dataset/labels/
 modules/release_detection/finetuning_dataset/images/
@@ -21,6 +22,8 @@ modules/release_detection/finetuning_dataset/labels/
 modules/release_detection/release_dataset/
 pitch_videos/
 pitch_videos_trimmed/
+woo_pitch_videos/
+trimmed_woo_pitch_videos/
 output_release_frames/
 
 # Training outputs
