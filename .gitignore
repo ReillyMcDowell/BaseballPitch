@@ -12,6 +12,7 @@ env/
 # Dataset files
 dataset/images/
 dataset/labels/*.cache
+modules/pitcher_segmentation/finetuning_dataset
 modules/naive_classification/val
 modules/naive_classification/train
 modules/naive_classification/test
