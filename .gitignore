@@ -12,12 +12,11 @@ env/
 # Dataset files
 dataset/images/
 dataset/labels/*.cache
-modules/pitcher_segmentation/finetuning_dataset
+modules/pitcher_detection/finetuning_dataset
+modules/pitcher_detection.zip
 modules/naive_classification/val
 modules/naive_classification/train
 modules/naive_classification/test
-modules/pose_detection/finetuning_dataset/images/
-modules/pose_detection/finetuning_dataset/labels/
 modules/release_detection/finetuning_dataset/images/
 modules/release_detection/finetuning_dataset/labels/
 modules/release_detection/release_dataset/
