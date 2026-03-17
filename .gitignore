@@ -14,6 +14,7 @@ dataset/images/
 dataset/labels/*.cache
 modules/pitcher_detection/finetuning_dataset
 modules/pitcher_detection.zip
+modules/pitcher_detection/curated_finetuning_dataset
 modules/naive_classification/val
 modules/naive_classification/train
 modules/naive_classification/test
