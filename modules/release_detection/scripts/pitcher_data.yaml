@@ -1,7 +1,0 @@
-path: ./modules/release_detection/finetuning_dataset
-train: images/train
-val: images/val
-
-# Pitcher detection - single class
-nc: 1
-names: ['pitcher']

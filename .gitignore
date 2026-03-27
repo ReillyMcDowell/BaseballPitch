@@ -10,22 +10,8 @@ ENV/
 env/
 
 # Dataset files
-dataset/images/
+data
 dataset/labels/*.cache
-modules/pitcher_detection/finetuning_dataset
-modules/pitcher_detection.zip
-modules/pitcher_detection/curated_finetuning_dataset
-modules/naive_classification/val
-modules/naive_classification/train
-modules/naive_classification/test
-modules/release_detection/finetuning_dataset/images/
-modules/release_detection/finetuning_dataset/labels/
-modules/release_detection/release_dataset/
-pitch_videos/
-pitch_videos_trimmed/
-woo_pitch_videos/
-trimmed_woo_pitch_videos/
-output_release_frames/
 
 # Training outputs
 runs/
