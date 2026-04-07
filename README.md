@@ -1,13 +1,11 @@
 BaseballPitch
 
-Realtime Baseball Pitch Predictions
+Baseball Pitch Classification
 
-This project focuses on scraping, analyzing, and predicting baseball pitches using Python. Currently includes tools to gather data (videos) and room for a framework for building prediction models. Eventually would like to use something like YOLOv11, RF-DETR, and/or SAM3/3D for computer vision predictions of what pitch is being thrown (60fps videos make SAM more diffucult but the 3D body models might be helpful?).
+This project focuses on scraping, analyzing, and predicting baseball pitches using Python. Currently includes scripts to gather data (baseball pitch videos), perform detection and pose estimation (only when pitcher is seen from behind the mound), and working on framework for pitch type classification (hoping to eventually get to real time).
 
 Project Structure
 
-scrape.py: The main script used for data collection. It scrapes pitch videos/data.
-
-pitch_videos: Directory where scraped video files are stored.
+WIP - I'll update when I finish the general structure.
 
 Author: Reilly McDowell
