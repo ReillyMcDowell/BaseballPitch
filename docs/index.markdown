@@ -5,8 +5,4 @@
 layout: page
 ---
 
-## Project
-
-Just testing out text writing for now
-
-Confirmed it doesn't use this page to load which is interesting.
+# Need to keep this blank so it doesn't make a new page for it
