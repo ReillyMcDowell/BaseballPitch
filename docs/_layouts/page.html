@@ -4,25 +4,24 @@ layout: default
 
 <section class="standalone">
   <div class="grid">
-    <div class="unit whole">
+    
+    <div class="unit two-thirds">
       <article>
         {%- if page.permalink contains "resources" %}
         {% include improve_doc_link.html %}
         {% endif -%}
-        <aside>
-          <h3>Getting Started</h3>
-            <ul>
-              {% for doc in site.docs %}
-                {% if doc.category == "getting-started" %}
-                  <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
-                {% endif %}
-              {% endfor %}
-          </ul>
-        </aside>
         <h1>{{ page.title }}</h1>
         {{ content }}
       </article>
     </div>
+
+    <aside class="unit one-third">
+      <div class="sidebar-content">
+        <h3>Sidebar Header</h3>
+        <p>Your sidebar links, widgets, or content go here.</p>
+        </div>
+    </aside>
+
     <div class="clear"></div>
   </div>
 </section>
