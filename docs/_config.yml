@@ -34,7 +34,7 @@ plugins:
 ############# TOP NAVIGATION BAR ################
 
 # use a logo image in your nav bar.
-use_logo: true
+use_logo: false
 
 # logo image to use. logo images are constrained at 50px in height.
 logo: assets/companylogo.png
