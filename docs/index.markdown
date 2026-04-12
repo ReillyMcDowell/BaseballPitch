@@ -8,3 +8,5 @@ layout: page
 ## Project
 
 Just testing out text writing for now
+
+Confirmed it doesn't use this page to load which is interesting.
