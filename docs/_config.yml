@@ -31,29 +31,6 @@ theme: minima
 plugins:
   - jekyll-feed
 
-############# TOP NAVIGATION BAR ################
-
-# use text title instead. text title read from uistring.title in ui strings section.
-use_text_title: false
-
-# make search bar appear in top nav?
-search_in_topnav: true
-
-# make search bar appear in sidebar?
-search_in_sidebar: false
-
-# in responsive view, show sidebar toggle button?
-toggle-sidebar-button: true
-
-# in responsive view, show navbar toggle button?
-navbar-toggle: true
-
-############# AUTOMATED LINKS #############
-
-# the links.html script requires you to list your sidebars here. this is if you're using managed links (see jekyllhowto-content-and-formatting.html#automatedlinks)
-sidebars: 
-  - generic
-
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
