@@ -5,4 +5,6 @@ title: Baseball Pitch
 
 ## Project Description
 
-Just testing base text stuff
+Aim to perform real-time Baseball Pitch Classification (what type of pitch is being thrown). 
+
+Is this a different paragraph?
