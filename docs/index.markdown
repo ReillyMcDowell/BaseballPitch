@@ -13,13 +13,17 @@ Theoretically what steps would one take to be able to do this?
 - Train a classifier of some kind
 - Profit!
 
+It doesn't end up this simple, but this is the general layout.
+
 ### Scope Limits
 
 Initially I was going to attempt this problem with as many baseball videos as possible; more data is more better, right?
 Turns out there are a lot of baseball games and even more baseball videos. It ends up as several hundreds of **terabytes** of videos. 
 
 I don't have that much storage, so we have to set some limits for ourselves:
+
 **Trim videos to the three seconds where the pitch happens.** For a large portion of these videos the pitcher is just standing there, or it cuts to the outfield after the ball is already hit. If we trim the first two seconds and only keep three seconds after that point, we get the part of the video where the windup and throw happen, cutting down on the amount of video we need to store, or label (and the more informative the frames are for our classifier).
+
 **Just one pitcher: Bryan Woo.** This is the main limit, and it gives a lot of benefits:
 - Cuts the 18 different types of baseball pitches down to **5 types** (Fastball, Sinker, Changeup, Slider, Sweeper) since these are the only types Bryan throws.
 - No need to figure out left hand pitching. Bryan Woo is a **Right Hand Pitcher (RHP)** so we don't have to worry about mirroring videos or other ways to tackle handedness in classifying.
@@ -62,4 +66,4 @@ def season_filtering():
 
 ## Video Labeling
 
-It would take an incredible amount of time to label all these videos.
+It would take an incredible amount of time to label all these videos even after trimming. 
