@@ -5,6 +5,16 @@ layout: default
 <section class="standalone">
   <div class="grid">
     <div class="unit whole">
+      <aside>
+        <h3>Getting Started</h3>
+          <ul>
+            {% for doc in site.docs %}
+              {% if doc.category == "getting-started" %}
+                <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
+              {% endif %}
+            {% endfor %}
+        </ul>
+      </aside>
       <article>
         {%- if page.permalink contains "resources" %}
         {% include improve_doc_link.html %}
