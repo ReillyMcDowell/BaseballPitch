@@ -33,12 +33,6 @@ plugins:
 
 ############# TOP NAVIGATION BAR ################
 
-# use a logo image in your nav bar.
-use_logo: false
-
-# logo image to use. logo images are constrained at 50px in height.
-logo: assets/companylogo.png
-
 # use text title instead. text title read from uistring.title in ui strings section.
 use_text_title: false
 
