@@ -7,4 +7,4 @@ title: Baseball Pitch
 
 Aim to perform real-time Baseball Pitch Classification (what type of pitch is being thrown). 
 
-Is this a different paragraph?
+# What type of thing is this?
