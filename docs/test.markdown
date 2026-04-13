@@ -10,10 +10,6 @@ order: 1
 
 Beautiful Soup is a Python package that can help parse html. It can even find the links for videos in website pages!
 
-This sounds great, so why are we not using it?
-
-Beautiful Soup is limited in the html it can parse. It **cannot parse dynamic content** - so any clickable menus or tables that we need to search for a single player's pitch video.
-
 {% highlight python %}
 import requests
 from bs4 import BeautifulSoup
@@ -25,3 +21,11 @@ page = requests.get(players_url)
 soup = BeautifulSoup(page.content, 'html.parser')
 
 {% endhighlight %}
+
+This sounds great, so why are we not using it?
+
+Beautiful Soup is limited in the html it can parse. It **cannot parse dynamic content** - so any clickable menus or tables that we need to search for a single player's pitch video won't be in our html soup.
+
+We need something that can go in a fill out menus, search fields, and click the tab to open the video link.
+
+[Put a Selenium link here eventually]
