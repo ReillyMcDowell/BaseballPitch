@@ -1,8 +1,8 @@
 ---
-layout: page
+layout: default
 title: Webscraping 1
 category: webscraping
-permalink: /BaseballPitch/Webscrape1/
+permalink: /webscrape1/
 order: 1
 ---
 
