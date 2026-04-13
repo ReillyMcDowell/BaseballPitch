@@ -11,16 +11,14 @@ layout: default
 
   .main-column {
     flex: 4;
-    min-width: 500px; 
+    min-width: 300px; 
   }
 
   .sidebar-column {
     flex: 1;
-    min-width: 200px; 
-    
-    /* NEW: Sticky settings for Desktop */
+    min-width: 250px; 
     position: sticky;
-    top: 20px; /* Stops sliding 20px from the top of the screen */
+    top: 10px; /* Stops sliding 10px from the top of the screen */
     align-self: flex-start; /* CRITICAL: Sticky items in Flexbox need this to work! */
   }
 
@@ -35,7 +33,7 @@ layout: default
       top: 0; /* Sticks flush to the very top edge on phones */
       background-color: white; /* Added so scrolling text hides behind it */
       z-index: 100; /* Forces it to hover above the scrolling text */
-      padding-top: 10px; /* Just to give it some breathing room */
+      padding-top: 20px; /* Just to give it some breathing room */
       padding-bottom: 10px;
     }
     
