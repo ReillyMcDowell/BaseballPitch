@@ -27,9 +27,9 @@ url: "https://reillymcdowell.github.io" # the base hostname & protocol for your 
 github_username:  ReillyMcDowell
 
 header_pages:
-  - index.md
-  - about.md
-  - contact.md
+  - index.markdown #THESE NEED TO BE EXACT FILE NAMES (hence the .markdown spelled out)
+  - about.markdown
+  - contact.markdown
 
 # Build settings
 theme: minima
