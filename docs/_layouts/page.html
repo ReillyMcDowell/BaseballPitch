@@ -82,9 +82,10 @@ layout: default
       <div class="sidebar-content">
         <h3>Webscraping</h3>
         <ul>
-          {% for doc in site.docs %}
-            {% if doc.category == "webscraping" %}
-              <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
+          {% assign sorted_pages = site.docs | sort: "order" %}
+          {% for page in sorted_pages %}
+            {% if page.category == "webscraping" %}
+              <li><a href="{{ page.url | relative_url }}">{{ page.title }}</a></li>
             {% endif %}
           {% endfor %}
         </ul>
