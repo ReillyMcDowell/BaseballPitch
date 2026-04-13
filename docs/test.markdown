@@ -2,7 +2,7 @@
 layout: page
 title: Webscraping 1
 category: webscraping
-permalink: /BaseballPitch/webscrape1/
+permalink: /webscrape1/
 order: 1
 ---
 
