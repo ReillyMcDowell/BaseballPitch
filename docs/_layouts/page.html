@@ -10,38 +10,45 @@ layout: default
   }
 
   .main-column {
-    flex: 2;
+    flex: 4;
     min-width: 300px; 
   }
 
   .sidebar-column {
     flex: 1;
     min-width: 250px; 
+    
+    /* NEW: Sticky settings for Desktop */
+    position: sticky;
+    top: 20px; /* Stops sliding 20px from the top of the screen */
+    align-self: flex-start; /* CRITICAL: Sticky items in Flexbox need this to work! */
   }
 
-  /* Hide the mobile toggle button and checkbox on desktop */
   .mobile-toggle-label { display: none; }
   #sidebar-toggle { display: none; }
 
-  /* Mobile-specific layout (activates on screens smaller than 768px) */
   @media (max-width: 768px) {
     .sidebar-column {
-      order: -1; /* 1. Moves the sidebar to the very top */
-      flex: 100%; /* 2. Forces it to take the full width */
+      order: -1; 
+      flex: 100%; 
+      
+      top: 0; /* Sticks flush to the very top edge on phones */
+      background-color: white; /* Added so scrolling text hides behind it */
+      z-index: 100; /* Forces it to hover above the scrolling text */
+      padding-top: 10px; /* Just to give it some breathing room */
+      padding-bottom: 10px;
     }
     
     .sidebar-content {
-      display: none; /* 3. Hides the sidebar content by default */
+      display: none; 
     }
 
     .mobile-toggle-label {
-      display: block; /* 4. Shows the clickable dropdown label */
+      display: block; 
       cursor: pointer;
       font-weight: bold;
-      margin-bottom: 10px;
     }
 
-    /* 5. When the invisible checkbox is checked, reveal the content */
     #sidebar-toggle:checked ~ .sidebar-content {
       display: block; 
     }
@@ -70,8 +77,14 @@ layout: default
       </label>
 
       <div class="sidebar-content">
-        <h3>Sidebar Header</h3>
-        <p>Your sidebar links, widgets, or content go here.</p>
+        <h3>Webscraping</h3>
+        <ul>
+          {% for doc in site.docs %}
+            {% if doc.category == "webscraping" %}
+              <li><a href="{{ doc.url }}">{{ doc.title }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
       </div>
 
     </aside>
