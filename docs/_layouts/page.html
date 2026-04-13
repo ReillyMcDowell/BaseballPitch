@@ -2,10 +2,40 @@
 layout: default
 ---
 
+<style>
+  /* Flexbox container to hold both columns */
+  .flex-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 40px; /* Space between main content and sidebar */
+    flex-wrap: wrap; /* Forces stacking on mobile screens */
+  }
+
+  /* Main content takes up 2 parts of the available space */
+  .main-column {
+    flex: 2;
+    min-width: 300px; /* Prevents it from getting too squished */
+  }
+
+  /* Sidebar takes up 1 part of the available space */
+  .sidebar-column {
+    flex: 1;
+    min-width: 250px; 
+  }
+
+  /* Just some visual styling for the sidebar so it stands out */
+  .sidebar-content {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e1e4e8;
+  }
+</style>
+
 <section class="standalone">
-  <div class="grid">
+  <div class="flex-layout">
     
-    <div class="unit two-thirds">
+    <div class="main-column">
       <article>
         {%- if page.permalink contains "resources" %}
         {% include improve_doc_link.html %}
@@ -15,13 +45,12 @@ layout: default
       </article>
     </div>
 
-    <aside class="unit one-third">
+    <aside class="sidebar-column">
       <div class="sidebar-content">
         <h3>Sidebar Header</h3>
         <p>Your sidebar links, widgets, or content go here.</p>
-        </div>
+      </div>
     </aside>
 
-    <div class="clear"></div>
   </div>
 </section>
