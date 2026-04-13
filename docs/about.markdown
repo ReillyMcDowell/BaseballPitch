@@ -1,8 +1,11 @@
 ---
 layout: page
 title: About
-permalink: /about/
+permalink: /about-redirect/
 ---
-## Project
 
-Building Websites with Jekyll & GitHub Pages.
+<script>
+  window.location.href = "https://reillymcdowell.github.io/about/";
+</script>
+
+<p>Redirecting to the <a href="https://reillymcdowell.github.io/about/"> About...</a></p>
