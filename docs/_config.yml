@@ -26,6 +26,11 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://reillymcdowell.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  ReillyMcDowell
 
+header_pages:
+  - index.md
+  - about.md
+  - contact.md
+
 # Build settings
 theme: minima
 plugins:
