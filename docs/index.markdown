@@ -35,6 +35,10 @@ I don't have that much storage, so we have to set some limits for ourselves:
 
 The MLB has an official website where they post baseball stats and videos of all the pitches from their games: [Baseball Savant](https://baseballsavant.mlb.com/). 
 
+<video width="640" height="360" controls src="assets/images/PitchType-CH_Zone-13_PlayID-0c9e10ef-a750-33be-980b-4d1573c7df45_Date-2025-07-25.mp4" title="webscraping"></video>
+
 ## Video Labeling
 
 It would take an incredible amount of time to label all these videos even after trimming. 
+
+<video width="640" height="360" controls src="assets/images/labeled_video.mp4" title="Labeling"></video>
