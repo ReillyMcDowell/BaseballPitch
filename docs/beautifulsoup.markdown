@@ -28,4 +28,4 @@ Beautiful Soup is limited in the html it can parse. It **cannot parse dynamic co
 
 We need something that can go in a fill out menus, search fields, and click the tab to open the video link.
 
-[Put a Selenium link here eventually]
+[Put a Selenium link here eventually]{https://reillymcdowell.github.io/BaseballPitch/Selenium/}
