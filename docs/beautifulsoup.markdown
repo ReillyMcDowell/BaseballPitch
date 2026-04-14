@@ -26,6 +26,6 @@ This sounds great, so why are we not using it?
 
 Beautiful Soup is limited in the html it can parse. It **cannot parse dynamic content** - so any clickable menus or tables that we need to search for a single player's pitch video won't be in our html soup.
 
-We need something that can go in a fill out menus, search fields, and click the tab to open the video link.
+We need something that can go in a fill out menus, search fields, and click the tab to open the video link...
 
-[Put a Selenium link here eventually]{https://reillymcdowell.github.io/BaseballPitch/Selenium/}
+[Selenium can solve this!]{https://reillymcdowell.github.io/BaseballPitch/Selenium/}
