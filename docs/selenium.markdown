@@ -35,7 +35,7 @@ Awesome. We can actually set up a lot of these steps that we want to accomplish 
 
 Specifically on Baseball Savant there are a lot of fields for filtering what you want to search. There are not always pitch videos for the years before statcast, despite having other metrics recorded, so a first good step can be writing a filtering function for our webdriver.
 
-*Basic Selenium Example:*
+*Selenium Filtering Example:*
 {% highlight python %}
 def season_filtering():
     """
@@ -68,6 +68,37 @@ def season_filtering():
 
 {% endhighlight %}
 
-Our other filtering functions follow a similar format. Something to note here is that Selenium is blind in a way - **it sees via HTML and XPaths**. 
+Our other filtering functions follow a similar format. Something to note here is that Selenium is blind in a way - **it sees via HTML and XPaths**. You can right click to inspect elements on whatever element on a given page you want to interact with. You can even copy the shortened relative path to that element via inspect as well.
 
-![XPath Example](XPath_example.jpg)
+*Finding XPath Example:*
+![XPath Example]({{ site.baseurl }}/assets/images/XPath_example.JPG)
+
+From there we can setup all the steps and go from Baseball Savant to all of an individual player's pitch videos. We can then go through however many rows and download the pitch video for each.
+
+*Full Selenium Search:*
+{% highlight python %}
+# Setting up Selenium WebDriver
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+
+search_url = "https://baseballsavant.mlb.com/statcast_search"
+# for looping all players put in 'for n in tqdm(range(len(ids_df))):'
+print(f"Navigating to: {search_url}")
+# Selenium to get the page
+driver.get(search_url)
+
+# Run all our filters
+season_filtering()
+season_type_filtering()
+player_name_fill()
+search_button_clicking()
+player_table_clicking()
+
+# Cycle through each row or rather each individual pitch
+for rows in tqdm(range(0, MAX_NUM_ROWS)):
+    # Always first table entry since we search by player
+    video_href = find_video_link(n=0, row=rows)
+    download_video(video_href)
+driver.quit()
+
+{% endhighlight %}
