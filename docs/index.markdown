@@ -41,6 +41,6 @@ The MLB has an official website where they post baseball stats and videos of all
 
 It would take an incredible amount of time to label all these videos even after trimming. 
 
-<video controls src="assets/images/labeled_video.mp4" title="Labeling"></video>
+<video width="640" height="360" controls src="assets/images/labeled_video.mp4" title="Labeling"></video>
 
-<video controls src="assets/images/pose_animation.mp4" title="Title"></video>
+<video width="640" height="640" controls src="assets/images/pose_animation.mp4" title="Title"></video>
