@@ -28,6 +28,7 @@ github_username:  ReillyMcDowell
 
 header_pages:
   - about.markdown # I believe the order of these matter here too
+  - shortcut_AirBNB.markdown
   - index.markdown #THESE NEED TO BE EXACT FILE NAMES (hence the .markdown spelled out)
   - contact.markdown
 
